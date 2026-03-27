@@ -269,10 +269,10 @@ anova_model <- aov(Sinuosity ~ Temperature, data=subset(Inc_exp, Genotype!="cc")
 summary(anova_model)
 TukeyHSD(anova_model)
 
-#### ------------ Enrichment of genes with 6 or more EREs:
+#### ------------ Enrichment of genes with 8 or more EREs:
 # total number of genes: 22156
-# genes with 6 or more EREs: 983
+# genes with 8 or more EREs: 879
 # (numbers come from Natalia's ERE prediction)
-(983+1)/(22156+1)
+(879+1)/(22156+1)
 
 
