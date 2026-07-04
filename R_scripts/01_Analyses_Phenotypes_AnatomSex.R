@@ -123,15 +123,22 @@ chisq.test(xtabs(count ~ Treatment + Sex_genetic, data = Data_fad_fil_sex))
 
 ### PREPARE DATA, Dc and DD genotypes grouped into a DD/Dc group
 ### Estradiol 
+
 pattern_est <- Data_est_fil %>% 
   mutate(Sex_genetic = factor(Sex_genetic),
-         Treatment = factor(Treatment),
-         Dorsal_pattern = factor(Dorsal_pattern),
-         Genotype = case_when(
-           Genotype %in% c("Dc","DD") ~ "DD/Dc",
-           Genotype == "cc" ~ "cc")) %>% 
-  group_by(Treatment,Dorsal_pattern,Genotype,Sex_genetic) %>%  
-  summarise(count = n()) 
+    Treatment = factor(Treatment),
+    Dorsal_pattern = factor(Dorsal_pattern),
+    Genotype = case_when(
+      Genotype %in% c("Dc","DD") ~ "DD/Dc",
+      Genotype == "cc" ~ "cc"
+    )
+  ) %>% 
+  group_by(Treatment, Dorsal_pattern, Genotype, Sex_genetic) %>%  
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(Treatment, Genotype, Sex_genetic) %>% 
+  mutate(prop = count / sum(count)) %>% 
+  mutate(SampleSize = sum(count)) %>% 
+  ungroup()
 
 ### Fadrozole 
 pattern_fad <- Data_fad_fil %>% 
@@ -140,11 +147,17 @@ pattern_fad <- Data_fad_fil %>%
          Dorsal_pattern = factor(Dorsal_pattern),
          Genotype = case_when(
            Genotype %in% c("Dc","DD") ~ "DD/Dc",
-           Genotype == "cc" ~ "cc")) %>% 
-  group_by(Treatment,Dorsal_pattern,Genotype,Sex_genetic) %>%  
-  summarise(count = n()) 
+           Genotype == "cc" ~ "cc"
+         )
+  ) %>% 
+  group_by(Treatment, Dorsal_pattern, Genotype, Sex_genetic) %>%  
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(Treatment, Genotype, Sex_genetic) %>% 
+  mutate(prop = count / sum(count)) %>% 
+  mutate(SampleSize = sum(count)) %>% 
+  ungroup()
 
-pdf("C:/Users/feiner/Dropbox/MS_Diamond_Hormones/Analyses/Plots/PatternMorphs_est.pdf", useDingbats = F)
+pdf("C:/Users/feiner/Dropbox/MS_Diamond_Hormones/Analyses/Plots/PatternMorphs_est_prop.pdf", useDingbats = F)
 ggplot(pattern_est, aes(x = as.factor(Treatment), fill = Dorsal_pattern))+
   geom_bar(aes(y = count), stat = "identity", alpha = 1,color = NA, linewidth = 1.2) +
   ylab("Number of individuals") +
@@ -152,9 +165,16 @@ ggplot(pattern_est, aes(x = as.factor(Treatment), fill = Dorsal_pattern))+
   scale_fill_manual(values=c("#BBD132","#514F21")) +     
   #ggtitle("Estradiol")+
   theme_minimal() 
+ggplot(pattern_est, aes(x = as.factor(Treatment), y = prop, fill = Dorsal_pattern)) +
+  geom_col(alpha = 1, color = NA, linewidth = 1.2) +
+  ylab("Proportion of individuals") +
+  facet_grid(Sex_genetic ~ Genotype) +
+  scale_fill_manual(values = c("#BBD132","#514F21")) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
 dev.off()
 
-pdf("C:/Users/feiner/Dropbox/MS_Diamond_Hormones/Analyses/Plots/PatternMorphs_fad.pdf", useDingbats = F)
+pdf("C:/Users/feiner/Dropbox/MS_Diamond_Hormones/Analyses/Plots/PatternMorphs_fad_prop.pdf", useDingbats = F)
 ggplot(pattern_fad, aes(x = as.factor(Treatment), fill = Dorsal_pattern))+
   geom_bar(aes(y = count), stat = "identity", alpha = 1,color = NA, linewidth = 1.2) +
   ylab("Number of individuals") +
@@ -162,6 +182,13 @@ ggplot(pattern_fad, aes(x = as.factor(Treatment), fill = Dorsal_pattern))+
   scale_fill_manual(values=c("#BBD132","#514F21")) +     
   #ggtitle("Estradiol")+
   theme_minimal() 
+ggplot(pattern_fad, aes(x = as.factor(Treatment), y = prop, fill = Dorsal_pattern)) +
+  geom_col(alpha = 1, color = NA, linewidth = 1.2) +
+  ylab("Proportion of individuals") +
+  facet_grid(Sex_genetic ~ Genotype) +
+  scale_fill_manual(values = c("#BBD132","#514F21")) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal()
 dev.off()
 
 #### STATS
